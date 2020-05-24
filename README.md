@@ -20,6 +20,15 @@ byte code = 0b00000000; // next 8 bytes of the stream are copies
 byte code = 0b11111110; // of the next 8 bytes of the stream, the first 7 are literal and the last is a copy
 ```
 
+#### Compression
+```csharp
+byte[] compressed = new byte[EasyLZ.MaxLengthRawEncode(data.Length)];
+int length = EasyLZ.Encode(data, 2, compressed);
+```
+#### Decompression
+```csharp
+byte[] decompressed = EasyLZ.Decode(data);
+```
 ### Literal byte
 A literal byte is an uncompressed byte of the stream that must be copied to the output stream.
 
