@@ -83,6 +83,27 @@ The standard way to store an image's bytes is to record the image's horizontal p
 
 The Axis filter reads the line(horizontal) and the column(vertical) and goes down which one to write in the flow using a function that calculates a note that says how much there is no entropy; after descending, it adds a byte that indicates whether the row was horizontal or vertical and in sequence the bytes of the row or column filtered with Sub.
 
+## EasyArchive
+EasyArchive is a format for archiving files and whether or not to compress each file individually.\
+Supports compression with Deflate, LZ4 or EasyLZ.
 
+>
+        (numbers is in little endian)
+
+        ESAR - identifies EasyArchive(ASCII)
+        8 bytes - number of files
+
+        for each file:
+            2 bytes - compression
+            4 bytes - name file size in bytes(N)
+            N bytes - file name(UTF8)
+            8 bytes - position in file
+            8 bytes - last write time(unix time)
+            8 bytes - uncompressed size
+            8 bytes - compressed size
+            1 byte  - PearsonHashing in compressed data
+            1 byte  - PearsonHashing in uncompressed data
+
+        *data file*
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
