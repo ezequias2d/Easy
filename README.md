@@ -34,3 +34,55 @@ Examples:
 ```csharp
 byte firstByte = 2; // first 2 most significant bits of the byte are for length and the other 6 bits for offset
 byte copyByte = 0b01000001 // copies 3 bytes from 2 offset backwards from the current output stream to the output stream
+```
+
+## EasyBitmap
+A bitmap format is simple but can be compressed with Deflate, LZ4, RLE and EasyLZ.
+
+>
+       P  |         Values      |       Purpose                             
+       0  | 0x45 0x53 0x42 0x4D | ESBM in ASCII, identify the format easily.
+       3  | 0x0D 0x0A           | Newline
+       5  | 0x03                | End-of-text charecter(ETX)
+          |
+          | ----------- Info header -----------
+          |      Bytes
+       6  |        8            | File size
+      14  |        4            | Width
+      18  |        4            | Height
+      22  |        1            | Pixel order:
+          |                         0 = RGBA
+          |                         1 = ARGB(Default)
+          |                         2 = GrayScale
+          |                         3 = GrayScale-A
+      23  |        4            | Compression:
+          |                         0 - No compression
+          |                         1 - Deflate
+          |                         2 - LZ4
+          |                         3 - RLE
+          |                         4 - EasyLZ
+      27  |        4            | Filter:
+          |                         0 - No filter
+          |                         1 - Axis
+          |                         2 - Sub
+      31  |        8            | Size of image data in bytes without compression.
+            ----------- Image data -----------
+      39        IMAGE DATA 
+
+### Filter
+Before compression, it is also possible to choose between Axis and Sub filters to modify the way bytes are saved, in order to reduce pixel entropy and improve compression.
+
+#### Sub
+The Sub filter turns the current byte into the offset between it and the previous byte. 
+> 0xFF, 0xFF, 0xFF, 0x00\
+> turns,\
+> 0xFF, 0x00, 0x00, 0x01
+
+#### Axis
+The standard way to store an image's bytes is to record the image's horizontal pixels in the stream, so that compression occurs only if the horizontal bytes are repeated, ignoring the repeated bytes of the vertical axis.
+
+The Axis filter reads the line(horizontal) and the column(vertical) and goes down which one to write in the flow using a function that calculates a note that says how much there is no entropy; after descending, it adds a byte that indicates whether the row was horizontal or vertical and in sequence the bytes of the row or column filtered with Sub.
+
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
