@@ -1,6 +1,6 @@
 # Easy
 
-Easy are C # libraries for storing compressed data.
+Easy are C# libraries for storing compressed data.
 
 ## EasyLZ
 EasyLZ is a compression algorithm based on LZ77 that uses a byte to store the length and distance of the copy in the dictionary.
@@ -82,6 +82,12 @@ The Sub filter turns the current byte into the offset between it and the previou
 The standard way to store an image's bytes is to record the image's horizontal pixels in the stream, so that compression occurs only if the horizontal bytes are repeated, ignoring the repeated bytes of the vertical axis.
 
 The Axis filter reads the line(horizontal) and the column(vertical) and goes down which one to write in the flow using a function that calculates a note that says how much there is no entropy; after descending, it adds a byte that indicates whether the row was horizontal or vertical and in sequence the bytes of the row or column filtered with Sub.
+
+### EasyBitmap.GDI
+EasyBitmap.GDI has extensions to transform a System.Drawing.Bitmap object into Easy.EasyBitmap and vice versa.
+
+### EasyBitmap.PaintNET
+An add-on for the Paint.NET image editor to support the image format.
 
 ## EasyArchive
 EasyArchive is a format for archiving files and whether or not to compress each file individually.\
