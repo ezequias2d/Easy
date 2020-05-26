@@ -72,10 +72,10 @@ namespace Easy.GDI
                             dst[pD] = src[pS + 3];
                             break;
                         case PixelOrder.RGBA:
-                            dst[pD + 3] = src[pS + 1];
-                            dst[pD + 2] = src[pS + 2];
-                            dst[pD + 1] = src[pS + 3];
-                            dst[pD] = src[pS];
+                            dst[pD + 3] = src[pS + 3];
+                            dst[pD + 2] = src[pS];
+                            dst[pD + 1] = src[pS + 1];
+                            dst[pD] = src[pS + 2];
                             break;
                         case PixelOrder.GrayScale:
                             dst[pD] = src[pS];

@@ -30,12 +30,13 @@ namespace Easy
           |                         0 - No compression
           |                         1 - Deflate
           |                         2 - LZ4
+          |                         3 - RLE
+          |                         4 - EasyLZ
       27  |        4            | Filter:
           |                         0 - No filter
           |                         1 - Axis
-          |                         2 - Left
+          |                         2 - Sub
       31  |        8            | Size of image data in bytes without compression.
-
             ----------- Image data -----------
       39        IMAGE DATA 
          */
@@ -117,7 +118,7 @@ namespace Easy
             using (BinaryReader reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true))
             {
                 // Read and validate the file header.
-                byte[] headerSignature = reader.ReadBytes(3);
+                byte[] headerSignature = reader.ReadBytes(HeaderSignature.Length);
 
                 if (Encoding.ASCII.GetString(headerSignature) != HeaderSignature)
                 {
