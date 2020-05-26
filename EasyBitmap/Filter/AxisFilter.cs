@@ -63,7 +63,7 @@ namespace Easy.Filter
 
         public byte[] Filter(ulong width, ulong height, byte[] data)
         {
-            byte[] output = new byte[(int)Math.Max(width, height) + data.Length];
+            byte[] output = new byte[(int)Math.Max(width, height) * 2 + data.Length];
             int position;
 
             ulong startWidth = 0;
