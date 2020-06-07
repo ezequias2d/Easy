@@ -49,6 +49,14 @@ namespace Easy
         RGB = 3,
         GrayScaleAlpha = 4
     }
+
+    public enum FlipMode
+    {
+        None,
+        Horizontal,
+        Vertical
+    }
+
     public class EasyBitmap
     {
         private const string HeaderSignature = "ESBM";
@@ -253,6 +261,53 @@ namespace Easy
 
                 writer.Flush();
                 writer.Close();
+            }
+        }
+
+        public void Swap(int x1, int y1, int x2, int y2)
+        {
+            int bytes = PixelBytes;
+
+            int p1 = (x1 + y1 * Width) * bytes;
+            int p2 = (x2 + y2 * Width) * bytes;
+
+            byte aux;
+
+            for (int i = 0; i < bytes; i++)
+            {
+                aux = ImageData[p1 + i];
+                ImageData[p1 + i] = ImageData[p2 + i];
+                ImageData[p2 + i] = aux;
+            }
+
+
+        }
+
+        public void Flip(FlipMode flipMode)
+        {
+            if(flipMode == FlipMode.Vertical)
+            {
+                int w = Width - 1;
+                for (int x = 0; x < Width / 2; x++)
+                {
+                    for (int y = 0; y < Height; y++)
+                    {
+                        Swap(x, y, w, y);
+                    }
+                    w--;
+                }
+            }
+            else if(flipMode == FlipMode.Horizontal)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    var h = Height - 1;
+                    for (int y = 0; y < Height / 2; y++)
+                    {
+                        Swap(x, y, x, h);
+                        h--;
+                    }
+                }
             }
         }
     }

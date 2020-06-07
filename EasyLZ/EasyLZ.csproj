@@ -4,10 +4,32 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Platforms>AnyCPU;x64</Platforms>
+    <Authors>Ezequias Silva</Authors>
+    <Company>Easy</Company>
+    <Version>0.1.1-alpha</Version>
+    <Copyright />
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/ezequias2d/Easy</PackageProjectUrl>
+    <PackageIcon>Easy.png</PackageIcon>
+    <RepositoryUrl>https://github.com/ezequias2d/Easy</RepositoryUrl>
+    <Description>EasyLZ is a compression algorithm based on LZ77 that uses a byte to store the length and distance of the copy in the dictionary.</Description>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Memory" Version="4.5.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Easy.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
