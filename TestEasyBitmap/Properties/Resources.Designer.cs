@@ -59,5 +59,15 @@ namespace TestEasyBitmap.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Byte[].
+        /// </summary>
+        internal static byte[] mountain {
+            get {
+                object obj = ResourceManager.GetObject("mountain", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

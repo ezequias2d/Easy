@@ -39,22 +39,14 @@ namespace Easy.Compression
         {
             byte[] data;
 
-            MemoryStream dataStream;
-            if (input is MemoryStream)
+            using (MemoryStream dataStream = new MemoryStream())
             {
-                dataStream = input as MemoryStream;
-            }
-            else
-            {
-                dataStream = new MemoryStream();
                 Task task = input.CopyToAsync(dataStream);
                 task.Wait();
                 dataStream.Seek(0, SeekOrigin.Begin);
-            }
 
-            data = dataStream.ToArray();
-            dataStream.Close();
-            dataStream.Dispose();
+                data = dataStream.ToArray();
+            }
 
             byte[] decompressed = EasyLZ.Decode(data);
 

@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Easy</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>0.1.3-alpha</Version>
+    <Version>0.2.2-alpha</Version>
     <Authors>Ezequias Silva</Authors>
     <Company>Easy</Company>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -13,7 +13,7 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Description>A bitmap format is simple but can be compressed with Deflate, LZ4, RLE and EasyLZ.</Description>
-    <PackageReleaseNotes>Add Flip method</PackageReleaseNotes>
+    <PackageReleaseNotes>Add Remap</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
