@@ -30,7 +30,7 @@ namespace Easy.Compression
             dataStream.Dispose();
 
             byte[] compressed = new byte[EasyLZ.MaxLengthRawEncode(data.Length)];
-            int length = EasyLZ.Encode(data, 2, compressed);
+            int length = EasyLZ.Encode(data, compressed);
 
             output.Write(compressed, 0, length);
         }
