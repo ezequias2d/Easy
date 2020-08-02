@@ -11,7 +11,7 @@ namespace Easy.Compression
     {
         public void Compress(Stream input, Stream output)
         {
-            using (DeflateStream compressionStream = new DeflateStream(output, CompressionMode.Compress, true))
+            using (DeflateStream compressionStream = new DeflateStream(output, CompressionLevel.Optimal, true))
             {
                 input.CopyTo(compressionStream);
             }
@@ -19,7 +19,7 @@ namespace Easy.Compression
 
         public void Decompress(Stream input, Stream output)
         {
-            using (DeflateStream decompressionStream = new DeflateStream(input, CompressionMode.Decompress, true))
+            using (DeflateStream decompressionStream = new DeflateStream(input, System.IO.Compression.CompressionMode.Decompress, true))
             {
                 decompressionStream.CopyTo(output);
             }
