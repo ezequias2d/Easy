@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Easy.Remap;
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
@@ -55,6 +56,8 @@ namespace Easy.GDI
 
             int pixels = width * height;
 
+            values = Remap.Remap.RemapColors(values, width, height, Remap.Remap.GetRemapModule(pixelOrder), ARGBRemapModule.Instance);
+
             fixed (byte* dst = rgbValues, src = values)
             {
                 int pD;
@@ -66,30 +69,25 @@ namespace Easy.GDI
                     switch (pixelOrder)
                     {
                         case PixelOrder.ARGB:
+                        case PixelOrder.RGBA:
                             dst[pD + 3] = src[pS];
                             dst[pD + 2] = src[pS + 1];
                             dst[pD + 1] = src[pS + 2];
                             dst[pD] = src[pS + 3];
                             break;
-                        case PixelOrder.RGBA:
-                            dst[pD + 3] = src[pS + 3];
-                            dst[pD + 2] = src[pS];
-                            dst[pD + 1] = src[pS + 1];
-                            dst[pD] = src[pS + 2];
-                            break;
                         case PixelOrder.GrayScale:
-                            dst[pD] = src[pS];
+                            dst[pD] = src[pS + 1];
                             break;
                         case PixelOrder.RGB:
-                            dst[pD + 2] = src[pS];
-                            dst[pD + 1] = src[pS + 1];
-                            dst[pD] = src[pS + 2];
+                            dst[pD + 2] = src[pS + 1];
+                            dst[pD + 1] = src[pS + 2];
+                            dst[pD] = src[pS + 3];
                             break;
                         case PixelOrder.GrayScaleAlpha:
-                            dst[pD + 3] = src[pS + 1];
-                            dst[pD + 2] = src[pS];
-                            dst[pD + 1] = src[pS];
-                            dst[pD] = src[pS];
+                            dst[pD + 3] = src[pS];
+                            dst[pD + 2] = src[pS + 1];
+                            dst[pD + 1] = src[pS + 1];
+                            dst[pD] = src[pS + 1];
                             break;
                     }
                 }
@@ -100,40 +98,17 @@ namespace Easy.GDI
             return bitmap;
         }
 
-        private static unsafe void SetColors(in byte a, in byte r, in byte g, in byte b, in byte* array, in int index, in PixelOrder pixelOrder)
+        private static unsafe void SetColors(in byte a, in byte r, in byte g, in byte b, in byte* array, in int index)
         {
-            switch (pixelOrder)
-            {
-                case PixelOrder.ARGB:
-                    array[index] = a;
-                    array[index + 1] = r;
-                    array[index + 2] = g;
-                    array[index + 3] = b;
-                    break;
-                case PixelOrder.RGBA:
-                    array[index] = r;
-                    array[index + 1] = g;
-                    array[index + 2] = b;
-                    array[index + 3] = a;
-                    break;
-                case PixelOrder.GrayScale:
-                    array[index] = (byte)((r + g + b) / 3);
-                    break;
-                case PixelOrder.RGB:
-                    array[index] = r;
-                    array[index + 1] = g;
-                    array[index + 2] = b;
-                    break;
-                case PixelOrder.GrayScaleAlpha:
-                    array[index] = (byte)((r + g + b) / 3);
-                    array[index + 1] = a;
-                    break;
-            }
+            array[index] = a;
+            array[index + 1] = r;
+            array[index + 2] = g;
+            array[index + 3] = b;
         }
 
         private static unsafe byte[] ImageDataFromBitmap(Bitmap bitmap, PixelOrder pixelOrder)
         {
-            int pixelSizeDst = EasyBitmap.CalculatePixelBytes(pixelOrder);
+            int pixelSizeDst = EasyBitmap.CalculatePixelBytes(PixelOrder.ARGB);
             int pixelSizeSrc = 0;
             switch (bitmap.PixelFormat)
             {
@@ -184,30 +159,30 @@ namespace Easy.GDI
                     switch (bitmap.PixelFormat)
                     {
                         case PixelFormat.Format32bppArgb:
-                            SetColors(src[p + 3], src[p + 2], src[p + 1], src[p + 0], dst, i * pixelSizeDst, pixelOrder);
+                            SetColors(src[p + 3], src[p + 2], src[p + 1], src[p + 0], dst, i * pixelSizeDst);
                             break;
                         case PixelFormat.Format16bppGrayScale:
                             aux = (byte)(((src[p] * 256) + src[p + 1]) / 257);
-                            SetColors(255, aux, aux, aux, dst, i * pixelSizeDst, pixelOrder);
+                            SetColors(255, aux, aux, aux, dst, i * pixelSizeDst);
                             break;
                         case PixelFormat.Format24bppRgb:
                         case PixelFormat.Format32bppRgb:
-                            SetColors(255, src[p + 2], src[p + 1], src[p + 0], dst, i * pixelSizeDst, pixelOrder);
+                            SetColors(255, src[p + 2], src[p + 1], src[p + 0], dst, i * pixelSizeDst);
                             break;
                         case PixelFormat.Format8bppIndexed:
                             aux = src[p];
-                            SetColors(255, pallet[aux].R, pallet[aux].G, pallet[aux].B, dst, i * pixelSizeDst, pixelOrder);
+                            SetColors(255, pallet[aux].R, pallet[aux].G, pallet[aux].B, dst, i * pixelSizeDst);
                             break;
 
                     }
                 }
             }
             bitmap.UnlockBits(bmpData);
+            imageData = Remap.Remap.RemapColors(imageData, bitmap.Width, bitmap.Height, ARGBRemapModule.Instance, Remap.Remap.GetRemapModule(pixelOrder));
             return imageData;
         }
         public static EasyBitmap ToEasyBitmap(this Bitmap bitmap, PixelOrder pixelOrder)
         {
-
             int w = bitmap.Width;
             int h = bitmap.Height;
             byte[] imageData = ImageDataFromBitmap(bitmap, pixelOrder);

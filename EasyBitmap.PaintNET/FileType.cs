@@ -48,7 +48,7 @@ namespace Easy.Paint.NET.Plugin
         {
             MemoryStream stream = new MemoryStream();
 
-            using (DeflateStream compressionStream = new DeflateStream(stream, CompressionMode.Compress, true))
+            using (DeflateStream compressionStream = new DeflateStream(stream, System.IO.Compression.CompressionMode.Compress, true))
             {
                 input.CopyTo(compressionStream);
             }
@@ -60,7 +60,7 @@ namespace Easy.Paint.NET.Plugin
         {
             MemoryStream stream = new MemoryStream();
 
-            using (DeflateStream decompressionStream = new DeflateStream(input, CompressionMode.Decompress, true))
+            using (DeflateStream decompressionStream = new DeflateStream(input, System.IO.Compression.CompressionMode.Decompress, true))
             {
                 decompressionStream.CopyTo(stream);
             }
@@ -85,7 +85,7 @@ namespace Easy.Paint.NET.Plugin
 
             //IZIBitmap izi = new IZIBitmap(bmp, token.PixelOrder);
             EasyBitmap izi = bmp.ToEasyBitmap(token.PixelOrder);
-            izi.Save(output, token.Compression, token.Filter);
+            izi.Save(output, (CompressionMode)token.Compression, (FilterMode)token.Filter);
             
             bmp.Dispose();
         }

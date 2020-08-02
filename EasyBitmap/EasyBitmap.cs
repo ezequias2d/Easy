@@ -22,10 +22,11 @@ namespace Easy
       14  |        4            | Width
       18  |        4            | Height
       22  |        1            | Pixel order:
-          |                         0 = RGBA
-          |                         1 = ARGB(Default)
+          |                         0 = ARGB
+          |                         1 = RGBA
           |                         2 = GrayScale
-          |                         3 = GrayScale-A
+                                    3 = RGB
+          |                         4 = GrayScale-A
       23  |        4            | Compression:
           |                         0 - No compression
           |                         1 - Deflate
@@ -41,7 +42,7 @@ namespace Easy
       39        IMAGE DATA 
          */
 
-    public enum PixelOrder
+    public enum PixelOrder : byte
     {
         ARGB = 0,
         RGBA = 1,
@@ -57,12 +58,28 @@ namespace Easy
         Vertical
     }
 
+    public enum CompressionMode : uint
+    {
+        None = 0,
+        Deflate = 1,
+        LZ4 = 2,
+        RLE = 3,
+        EasyLZ = 4
+    }
+
+    public enum FilterMode : uint
+    {
+        None = 0,
+        Axis = 1,
+        Sub = 2
+    }
+
     public class EasyBitmap
     {
         private const string HeaderSignature = "ESBM";
 
-        public static IReadOnlyList<ICompression> Compressions;
-        public static IReadOnlyList<IFilter> Filters;
+        private static IReadOnlyList<ICompression> Compressions;
+        private static IReadOnlyList<IFilter> Filters;
 
         static EasyBitmap()
         {
@@ -80,13 +97,29 @@ namespace Easy
             Filters = filters;
         }
 
+        /// <summary>
+        /// Width of image.
+        /// </summary>
         public int Width { get; private set; }
+
+        /// <summary>
+        /// Height of image.
+        /// </summary>
         public int Height { get; private set; }
 
+        /// <summary>
+        /// PixelOrder format.
+        /// </summary>
         public PixelOrder PixelOrder { get; private set; }
 
-        public byte[] ImageData;
+        /// <summary>
+        /// Pixel image data.
+        /// </summary>
+        public byte[] ImageData { get; private set; }
 
+        /// <summary>
+        /// Get bytes per pixel in this image.
+        /// </summary>
         public int PixelBytes
         {
             get
@@ -95,13 +128,20 @@ namespace Easy
             }
         }
 
-        public EasyBitmap(int width, int height, PixelOrder pixelOrder, byte[] imageData, int index, int length)
+        /// <summary>
+        /// Create EasyBitmap from variables.
+        /// </summary>
+        /// <param name="width">Width of image.</param>
+        /// <param name="height">Height of image.</param>
+        /// <param name="pixelOrder">PixelOrder of image.</param>
+        /// <param name="imageData">Pixel image data.</param>
+        public EasyBitmap(int width, int height, PixelOrder pixelOrder, Span<byte> imageData)
         {
             Width = width;
             Height = height;
             PixelOrder = pixelOrder;
             ImageData = new byte[width * height * PixelBytes];
-            Array.Copy(imageData, index, ImageData, 0, length);
+            imageData.CopyTo(ImageData);
 
             if (ImageData == null || ImageData.Length == 0)
             {
@@ -109,11 +149,21 @@ namespace Easy
             }
         }
 
+        /// <summary>
+        /// Create a new EasyBitmap object from stream that contain a EasyBitmap image file.
+        /// </summary>
+        /// <param name="stream">Input stream.</param>
+        /// <param name="leaveOpen">Leave stream open</param>
         public EasyBitmap(Stream stream, bool leaveOpen = false)
         {
             Open(stream, leaveOpen);
         }
 
+        /// <summary>
+        /// Load image from stream for this EasyBitmap.
+        /// </summary>
+        /// <param name="stream">Input stream.</param>
+        /// <param name="leaveOpen">Leave stream open.</param>
         public void Open(Stream stream, bool leaveOpen = false)
         {
             int width;
@@ -134,7 +184,7 @@ namespace Easy
                 }
                 stream.Seek(14, SeekOrigin.Begin);
 
-                width = (int)reader.ReadInt32();
+                width = (int)reader.ReadUInt32();
                 height = (int)reader.ReadUInt32();
                 pixelOrder = (PixelOrder)reader.ReadByte();
                 compression = reader.ReadUInt32();
@@ -179,6 +229,11 @@ namespace Easy
             }
         }
 
+        /// <summary>
+        /// Calculate bytes for a PixelOrder format.
+        /// </summary>
+        /// <param name="pixelOrder">PixelOrder format.</param>
+        /// <returns>Number of bytes used per pixel in the PixelOrder format.</returns>
         public static int CalculatePixelBytes(PixelOrder pixelOrder)
         {
             switch (pixelOrder)
@@ -196,7 +251,14 @@ namespace Easy
             return 0;
         }
 
-        public void Save(Stream stream, uint compress, uint filter, StatusReporter reporter = null)
+        /// <summary>
+        /// Record image to stream.
+        /// </summary>
+        /// <param name="stream">Output stream.</param>
+        /// <param name="compress">Compression mode.</param>
+        /// <param name="filter">Filter mode.</param>
+        /// <param name="reporter"></param>
+        public void Save(Stream stream, CompressionMode compress, FilterMode filter, StatusReporter reporter = null)
         {
             // The stream paint.net hands us must not be closed.
             using (BinaryWriter writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
@@ -264,6 +326,13 @@ namespace Easy
             }
         }
 
+        /// <summary>
+        /// Swap two pixels of image.
+        /// </summary>
+        /// <param name="x1">X1 Euclidean coordinate.</param>
+        /// <param name="y1">Y1 Euclidean coordinate.</param>
+        /// <param name="x2">X2 Euclidean coordinate.</param>
+        /// <param name="y2">Y2 Euclidean coordinate.</param>
         public void Swap(int x1, int y1, int x2, int y2)
         {
             int bytes = PixelBytes;
@@ -279,10 +348,12 @@ namespace Easy
                 ImageData[p1 + i] = ImageData[p2 + i];
                 ImageData[p2 + i] = aux;
             }
-
-
         }
 
+        /// <summary>
+        /// Flip bitmap in FlipMode mode.
+        /// </summary>
+        /// <param name="flipMode">Flip mode.</param>
         public void Flip(FlipMode flipMode)
         {
             if(flipMode == FlipMode.Vertical)

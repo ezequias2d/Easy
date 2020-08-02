@@ -8,49 +8,54 @@ namespace Easy.Remap
 {
     public static class Remap
     {
-        public static byte[] RemapColors(byte[] src, IRemapModule srcRemapModule, IRemapModule dstRemapModule)
+        public static byte[] RemapColors(Span<byte> src, int width, int height, IRemapModule srcRemapModule, IRemapModule dstRemapModule)
         {
             Span<byte> srcSpan = src;
 
-            Color color;
             using (MemoryStream dst = new MemoryStream())
             {
-                while(srcSpan.Length >= srcRemapModule.ColorSize)
+                int positionX = 0;
+                int positionY = 0;
+                while(positionX < width && positionY < height)
                 {
-                    color = srcRemapModule.GetColor(srcSpan);
-                    dstRemapModule.Remap(ref color, dst);
-
-                    srcSpan = srcSpan.Slice(srcRemapModule.ColorSize);
+                    dstRemapModule.Remap(srcRemapModule, srcSpan, positionX, positionY, width, height, dst);
+                    
+                    positionX++;
+                    
+                    if(positionX >= width)
+                    {
+                        positionX = 0;
+                        positionY++;
+                    }
                 }
 
                 return dst.ToArray();
             }
         }
 
-        public static byte[] RemapColors(EasyBitmap bitmap, IRemapModule dstRemapModule)
+        public static IRemapModule GetRemapModule(PixelOrder pixelOrder)
         {
-            IRemapModule srcRemapModule;
-            switch (bitmap.PixelOrder)
+            switch (pixelOrder)
             {
                 case PixelOrder.ARGB:
-                    srcRemapModule = ARGBRemapModule.Instance;
-                    break;
+                    return ARGBRemapModule.Instance;
                 case PixelOrder.GrayScale:
-                    srcRemapModule = GrayScaleRemapModule.Instance;
-                    break;
+                    return GrayScaleRemapModule.Instance;
                 case PixelOrder.GrayScaleAlpha:
-                    srcRemapModule = GrayScaleARemapModule.Instance;
-                    break;
+                    return GrayScaleARemapModule.Instance;
                 case PixelOrder.RGB:
-                    srcRemapModule = RGBRemapModule.Instance;
-                    break;
+                    return RGBRemapModule.Instance;
                 case PixelOrder.RGBA:
-                    srcRemapModule = RGBARemapModule.Instance;
-                    break;
+                    return RGBARemapModule.Instance;
                 default:
-                    throw new ArgumentException("EasyBitmap pixel order is not supported.", nameof(bitmap));
+                    throw new ArgumentException("EasyBitmap pixel order is not supported.");
             }
-            return RemapColors(bitmap.ImageData, srcRemapModule, dstRemapModule);
+        }
+
+        public static byte[] RemapColors(EasyBitmap bitmap, IRemapModule dstRemapModule)
+        {
+            IRemapModule srcRemapModule = GetRemapModule(bitmap.PixelOrder);
+            return RemapColors(bitmap.ImageData, bitmap.Width, bitmap.Height, srcRemapModule, dstRemapModule);
         }
     }
 }
