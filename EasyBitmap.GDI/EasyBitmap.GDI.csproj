@@ -3,6 +3,14 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Version>0.3.0-alpha</Version>
+    <Authors>Ezequias Silva</Authors>
+    <Company>Easy</Company>
+    <Description>A lib to convert Bitmap to EasyBitmap</Description>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/ezequias2d/Easy</RepositoryUrl>
+    <PackageIcon>EasyBitmap.png</PackageIcon>
+    <PackageTags>Image EasyBitmap Bitmap</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +19,17 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EasyBitmap\EasyBitmap.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\EasyBitmap.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

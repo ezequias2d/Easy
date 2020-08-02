@@ -187,7 +187,7 @@ namespace Easy.GDI
             int h = bitmap.Height;
             byte[] imageData = ImageDataFromBitmap(bitmap, pixelOrder);
 
-            return new EasyBitmap(w, h, pixelOrder, imageData, 0, imageData.Length);
+            return new EasyBitmap(w, h, pixelOrder, imageData);
         }
 
         public static Bitmap ToBitmap(this EasyBitmap bitmap)
