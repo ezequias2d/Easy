@@ -79,7 +79,7 @@ namespace Easy
         private Span<byte> GetCompressionDataEasyLZ(byte[] uncompressed)
         {
             byte[] compressed = new byte[(int)(Length * 1.125f + 16)];
-            int size = EasyLZ.Encode(uncompressed, 2, compressed);
+            int size = EasyLZ.Encode(uncompressed, compressed);
             return new Span<byte>(compressed, 0, size);
         }
 
