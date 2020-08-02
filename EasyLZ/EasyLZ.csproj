@@ -6,7 +6,7 @@
     <Platforms>AnyCPU;x64</Platforms>
     <Authors>Ezequias Silva</Authors>
     <Company>Easy</Company>
-    <Version>0.1.1-alpha</Version>
+    <Version>0.2.0-alpha</Version>
     <Copyright />
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -15,7 +15,13 @@
     <RepositoryUrl>https://github.com/ezequias2d/Easy</RepositoryUrl>
     <Description>EasyLZ is a compression algorithm based on LZ77 that uses a byte to store the length and distance of the copy in the dictionary.</Description>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageTags>compression, easylz</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="CircularArray.cs" />
+    <Compile Remove="EasyLZStream.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Memory" Version="4.5.4" />
