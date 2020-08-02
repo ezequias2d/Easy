@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -10,7 +11,7 @@ namespace Easy
     {
 
         /// <summary>
-        /// Result of Search function
+        /// Result of Search function.
         /// </summary>
         private ref struct SearchResult
         {
@@ -18,6 +19,15 @@ namespace Easy
             public int offset;
         };
 
+        /// <summary>
+        /// Internal function that looks for the max match of the dictionary.
+        /// </summary>
+        /// <param name="src">Source data.</param>
+        /// <param name="hashTable">HashTable</param>
+        /// <param name="position">Starting position of the larger match to look for.</param>
+        /// <param name="maxLength">Max match limit to look for.</param>
+        /// <param name="maxOffset">Max match distance.</param>
+        /// <returns>Max match of current position of data limited by maxLength and maxOffset.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static SearchResult SearchInternal(Span<byte> src, HashTable hashTable, in int position, in int maxLength, in int maxOffset)
         {
@@ -52,17 +62,35 @@ namespace Easy
             return result;
         }
 
+        /// <summary>
+        /// Add next 2 bytes to hashtable to find match.
+        /// </summary>
+        /// <param name="src">Source data.</param>
+        /// <param name="hashTable">HashTable.</param>
+        /// <param name="position">Position of byte to add.</param>
+        /// <param name="resultLength">Bytes to add.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void AddHashTable(in Span<byte> src, in HashTable hashTable, in int position, in int resultLenth)
+        private static void AddHashTable(in Span<byte> src, in HashTable hashTable, in int position, in int resultLength)
         {
             int idx = position;
-            int end = position + resultLenth;
+            int end = position + resultLength;
             while (idx < end && idx < src.Length - 1)
             {
                 hashTable.Add(src, idx++);
             }
         }
 
+        /// <summary>
+        /// Search for max match in dictionary.
+        /// </summary>
+        /// <param name="src">Source data.</param>
+        /// <param name="hashTable">HashTable for search match.</param>
+        /// <param name="position">Starting position of the larger match to look for.</param>
+        /// <param name="maxLength">Max match limit to look for.</param>
+        /// <param name="maxOffset">Max match distance.</param>
+        /// <param name="previewFlag">Flag that the previous byte was found a match.</param>
+        /// <param name="previewResult">Match size previously found.</param>
+        /// <returns>Max match of current position of data limited by maxLength and maxOffset.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static SearchResult Search(Span<byte> src, HashTable hashTable, in int position, in int maxLength, in int maxOffset, ref bool previewFlag, ref SearchResult previewResult)
         {
@@ -94,18 +122,35 @@ namespace Easy
             return result;
         }
 
+        /// <summary>
+        /// Calculates maximum encoded size with header. (Ceiling(lenght * 1.125 + 9))
+        /// </summary>
+        /// <param name="length">Lenght of input data for Encode function.</param>
+        /// <returns>Max output lenght for Encode function.</returns>
         public static int MaxLengthEncode(int length)
         {
-            return (int)(length * 1.125f + 9);
+            return (int)Math.Ceiling(length * 1.125 + 9.0);
         }
 
+        /// <summary>
+        /// Calculates maximum encoded size without header. (Ceiling(lenght * 1.125 + 1))
+        /// </summary>
+        /// <param name="length">Lenght of input data for RawEncode function.</param>
+        /// <returns>Max output lenght for RawEncode function.</returns>
         public static int MaxLengthRawEncode(int length)
         {
-            return (int)(length * 1.125f + 1);
+            return (int)Math.Ceiling(length * 1.125 + 1.0);
         }
 
+        /// <summary>
+        /// Encode data with EasyLZ compression with header.
+        /// </summary>
+        /// <param name="src">Source data.</param>
+        /// <param name="lengthBits">Bits used for word copy size (maximum is 7), (8 - lenghtBits) is the bits used to locate the copy.</param>
+        /// <param name="dst">Destination data.</param>
+        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int Encode(Span<byte> src, byte lengthBits, Span<byte> dst)
+        public static int Encode(Span<byte> src, Span<byte> dst, byte lengthBits = 2)
         {
             int dstPosition = 0;
             uint uncompressedSize = (uint)src.Length;
@@ -122,17 +167,18 @@ namespace Easy
             dst[dstPosition++] = (byte)(uncompressedSize >> 8);
             dst[dstPosition++] = (byte)(uncompressedSize);
 
-            return RawEncode(src, lengthBits, dst, dstPosition);
+            return 8 + RawEncode(src, dst.Slice(dstPosition), lengthBits);
         }
 
         /// <summary>
         /// Compress data with EasyLZ without header.
         /// </summary>
-        /// <param name="src">Source data</param>
-        /// <param name="matchBits">Max 7</param>
-        /// <returns>Compressed data</returns>
+        /// <param name="src">Source data.</param>
+        /// <param name="dst">Destination data.</param>
+        /// <param name="lengthBits">Bits used for word copy size (maximum is 7), (8 - lenghtBits) is the bits used to locate the copy.</param>
+        /// <returns>Compressed data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int RawEncode(Span<byte> src, byte lengthBits, Span<byte> dst, int startDst = 0)
+        public static int RawEncode(Span<byte> src, Span<byte> dst, byte lengthBits = 2)
         {
             int position = 0;
             int length = src.Length;
@@ -142,7 +188,7 @@ namespace Easy
             int maxLenght = (int)Math.Pow(2, lengthBits) + 1;
             HashTable hashTable = new HashTable(65536, maxOffset);
 
-            int dataPosition = startDst;
+            int dataPosition = 0;
             int bufferPosition = 1;
             byte code = 0;
             byte codeCount = 0;
@@ -205,6 +251,11 @@ namespace Easy
             return dataPosition;
         }
 
+        /// <summary>
+        /// Decode EasyLZ data with header.
+        /// </summary>
+        /// <param name="src">Source data.</param>
+        /// <returns>Decoded data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte[] Decode(Span<byte> src)
         {
@@ -230,19 +281,28 @@ namespace Easy
 
             byte[] dst = new byte[uncompressedSize];
 
-            RawDecode(src, dst, srcCount);
+            int lenght = RawDecode(src.Slice(srcCount), dst);
+
+            if (lenght != uncompressedSize)
+                throw new Exception($"Uncompressed size is wrong, {uncompressedSize} != {lenght}");
 
             return dst;
         }
 
+        /// <summary>
+        /// Decode EasyLZ data without header.
+        /// </summary>
+        /// <param name="src">Source data.</param>
+        /// <param name="dst">Destination data.</param>
+        /// <returns>Uncompressed size.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void RawDecode(Span<byte> src, Span<byte> dst, int srcPosition)
+        public static unsafe int RawDecode(Span<byte> src, Span<byte> dst)
         {
             fixed (byte* pSrc = src, pDst = dst)
             {
                 byte* pDstPosition = pDst;
                 byte* pDstLength = pDstPosition + dst.Length;
-                byte* pSrcPosition = pSrc + srcPosition;
+                byte* pSrcPosition = pSrc;
 
                 byte code = 0;
                 byte codeCount = 0;
@@ -284,7 +344,7 @@ namespace Easy
                         // acha posição
                         pPosition = (pDstPosition - (aux & (0xFF >> maxMatchBits)) - 1);
 
-                        MemoryCopy(pPosition, pDstPosition, length, (int)(pDstPosition - pPosition));
+                        MemoryCopy(pPosition, pDstPosition, length);
                         pDstPosition += length;
                     }
 
@@ -292,11 +352,18 @@ namespace Easy
                     codeCount--;
                 } while (pDstPosition < pDstLength);
 
+                return (int)(pDstPosition - pDst);
             }
         }
 
+        /// <summary>
+        /// Copy from source to destination with overlap compatibility.
+        /// </summary>
+        /// <param name="source">Source data.</param>
+        /// <param name="destination">Destination data.</param>
+        /// <param name="length">Length.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe void MemoryCopy(byte* source, byte* destination, int length, int overlapPosition)
+        private static unsafe void MemoryCopy(byte* source, byte* destination, int length)
         {
             while (length > 0)
             {
