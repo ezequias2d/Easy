@@ -49,7 +49,9 @@ namespace Easy
             uint srcPosition = 0;
             BitStream stream = new BitStream(null, dst);
 
-            while(srcPosition < src.Length)
+            Serialize(tree.Root, stream);
+
+            while (srcPosition < src.Length)
             {
                 (byte count, ulong code) pair = tree[src[(int)(srcPosition++)]];
 
@@ -63,6 +65,29 @@ namespace Easy
             stream.Dispose();
 
             return stream.WritePosition;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void Serialize(Tree<byte>.Node node, BitStream stream)
+        {
+            if (node.IsLeaf)
+            {
+                stream.Write(1);
+                stream.WriteByte(node.Pair.Key);
+            }
+            else
+            {
+                stream.Write(0);
+                if(node.Left != null)
+                    Serialize(node.Left, stream);
+                if (node.Right != null)
+                    Serialize(node.Right, stream);
+            }
+        }
+
+        private static Tree<byte>.Node Deserialize(BitStream stream)
+        {
+            throw new NotImplementedException();
         }
 
 
