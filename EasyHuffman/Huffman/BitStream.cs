@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.Design;
 
 namespace Easy.Huffman
 {
@@ -46,9 +47,23 @@ namespace Easy.Huffman
 
         public void Write(byte bit)
         {
-            writeCount++;
-            writeCode = (byte)(writeCode | (bit << (8 - writeCode)));
+            writeCode = (byte)(writeCode | (bit << (8 - ++writeCount)));
 
+            if (writeCount == 8)
+                SendByte();
+        }
+
+        public void WriteByte(byte value)
+        {
+            byte toWrite = (byte)(8 - writeCount);
+            if(writeCount != 0)
+            {
+                writeCode = (byte)(writeCode | (value >> writeCount));
+                SendByte();
+            }
+            
+            writeCount = toWrite;
+            writeCode = (byte)(value << toWrite);
             if (writeCount == 8)
                 SendByte();
         }
@@ -63,6 +78,7 @@ namespace Easy.Huffman
         {
             writeCount = 0;
             _writeSpan[writePosition++] = writeCode;
+            writeCode = 0;
         }
 
         public void Dispose()
