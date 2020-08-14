@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EasyBitmap.GDI\EasyBitmap.GDI.csproj" />
     <ProjectReference Include="..\EasyBitmap\EasyBitmap.csproj" />
+    <ProjectReference Include="..\EasyHuffman\EasyHuffman.csproj" />
     <ProjectReference Include="..\EasyLZ\EasyLZ.csproj" />
   </ItemGroup>
 

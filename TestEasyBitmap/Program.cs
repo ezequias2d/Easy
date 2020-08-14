@@ -4,27 +4,30 @@ using Easy.Remap;
 using System;
 using System.Drawing;
 using System.IO;
+using System.Text;
 using TestEasyBitmap.Properties;
 
 namespace TestEasyBitmap
 {
     class Program
     {
+        //static void Main(string[] args)
+        //{
+        //    byte[] data = File.ReadAllBytes("Resources/enwik8");
+        //    byte[] compressed = new byte[Easy.EasyLZ.MaxLengthEncode(data.Length)];
+        //    int count = Easy.EasyLZ.Encode(data, compressed, 0);
+
+        //    File.WriteAllBytes("Resources/enwik8.eslz", new Span<byte>(compressed, 0, count).ToArray());
+        //}
+
         static void Main(string[] args)
         {
-            Bitmap bitmap = new Bitmap("Resources/wall.png");
-            EasyBitmap easyBitmap = bitmap.ToEasyBitmap(PixelOrder.RGB);
-            easyBitmap.Flip(FlipMode.Horizontal);
-            using (var file = File.OpenWrite("Resources/fliped.esbm"))
-            {
-                easyBitmap.ImageData = Remap.RemapColors(Remap.RemapColors(easyBitmap, GrayScaleRemapModule.Instance), GrayScaleRemapModule.Instance, RGBRemapModule.Instance);
-                easyBitmap.Save(file, 4, 0);
-            }
+            byte[] data = File.ReadAllBytes("Resources/enwik8");
+            byte[] compressed = new byte[data.Length];
 
-            using(var file = new MemoryStream(Resources.mountain))
-            {
-                easyBitmap = new EasyBitmap(file);
-            }
+            int count = EasyHuffman.Encode(data, compressed);
+
+            Console.Read();
         }
     }
 }
