@@ -22,7 +22,7 @@ byte code = 0b11111110; // of the next 8 bytes of the stream, the first 7 are li
 
 #### Compression
 ```csharp
-byte[] compressed = new byte[EasyLZ.MaxLengthRawEncode(data.Length)];
+byte[] compressed = new byte[EasyLZ.MaxLengthEncode(data.Length)];
 int length = EasyLZ.Encode(data, compressed);
 ```
 #### Decompression
