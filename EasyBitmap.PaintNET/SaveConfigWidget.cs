@@ -32,11 +32,11 @@ namespace Easy.Paint.NET.Plugin
                 Text = "PixelOrder"
             };
 
-            pixelOrder.Items.Add(PixelOrder.ARGB);
-            pixelOrder.Items.Add(PixelOrder.RGBA);
-            pixelOrder.Items.Add(PixelOrder.GrayScale);
-            pixelOrder.Items.Add(PixelOrder.RGB);
-            pixelOrder.Items.Add(PixelOrder.GrayScaleAlpha);
+            pixelOrder.Items.Add(PixelFormat.ARGB);
+            pixelOrder.Items.Add(PixelFormat.RGBA);
+            pixelOrder.Items.Add(PixelFormat.GrayScale);
+            pixelOrder.Items.Add(PixelFormat.RGB);
+            pixelOrder.Items.Add(PixelFormat.GrayScaleAlpha);
 
             compression.Items.Add("None");
             compression.Items.Add("Deflate");
@@ -87,7 +87,7 @@ namespace Easy.Paint.NET.Plugin
             return new EasyBitmapSaveConfigToken
             {
                 Compression = (uint)compression.SelectedIndex,
-                PixelOrder = (PixelOrder)pixelOrder.SelectedIndex,
+                PixelOrder = (PixelFormat)pixelOrder.SelectedIndex,
                 Filter = (uint)filter.SelectedIndex
             };
         }

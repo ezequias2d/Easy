@@ -7,7 +7,7 @@ namespace Easy.Paint.NET.Plugin
     internal class EasyBitmapSaveConfigToken : SaveConfigToken
     {
 
-        public PixelOrder PixelOrder { get; set; }
+        public PixelFormat PixelOrder { get; set; }
 
         public uint Compression { get; set; }
 
@@ -17,7 +17,7 @@ namespace Easy.Paint.NET.Plugin
         {
             Compression = 1;
             Filter = 1;
-            PixelOrder = PixelOrder.ARGB;
+            PixelOrder = PixelFormat.ARGB;
         }
 
         public override object Clone()
