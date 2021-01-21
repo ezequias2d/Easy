@@ -22,11 +22,11 @@ namespace Easy
       14  |        4            | Width
       18  |        4            | Height
       22  |        1            | Pixel order:
-          |                         0 = ARGB
-          |                         1 = RGBA
-          |                         2 = GrayScale
-                                    3 = RGB
-          |                         4 = GrayScale-A
+          |                         0 = ARGB 8888
+          |                         1 = RGBA 8888
+          |                         2 = GrayScale 8
+                                    3 = RGB 888
+          |                         4 = GrayScale-A 88
       23  |        4            | Compression:
           |                         0 - No compression
           |                         1 - Deflate
@@ -42,13 +42,40 @@ namespace Easy
       39        IMAGE DATA 
          */
 
-    public enum PixelOrder : byte
+    public enum PixelFormat : byte
     {
+        /// <summary>
+        /// ARGB8888
+        /// </summary>
         ARGB = 0,
+        /// <summary>
+        /// RGBA8888
+        /// </summary>
         RGBA = 1,
+        /// <summary>
+        /// GrayScale8
+        /// </summary>
         GrayScale = 2,
+        /// <summary>
+        /// RGB888
+        /// </summary>
         RGB = 3,
-        GrayScaleAlpha = 4
+        /// <summary>
+        /// GrayScaleA88
+        /// </summary>
+        GrayScaleAlpha = 4,
+        /// <summary>
+        /// RGBA2222
+        /// </summary>
+        RGBA8,
+        /// <summary>
+        /// RGBA4444
+        /// </summary>
+        RGBA16,
+        /// <summary>
+        /// RGB565
+        /// </summary>
+        RGB16,
     }
 
     public enum FlipMode
@@ -78,21 +105,25 @@ namespace Easy
     {
         private const string HeaderSignature = "ESBM";
 
-        private static IReadOnlyList<ICompression> Compressions;
-        private static IReadOnlyList<IFilter> Filters;
+        private static readonly IReadOnlyList<ICompression> Compressions;
+        private static readonly IReadOnlyList<IFilter> Filters;
 
         static EasyBitmap()
         {
-            List<ICompression> compressions = new List<ICompression>();
-            compressions.Add(new DeflateCompression());
-            compressions.Add(new LZ4Compression());
-            compressions.Add(new RLECompression());
-            compressions.Add(new EasyLZCompression());
+            List<ICompression> compressions = new List<ICompression>
+            {
+                new DeflateCompression(),
+                new LZ4Compression(),
+                new RLECompression(),
+                new EasyLZCompression()
+            };
             Compressions = compressions;
 
-            List<IFilter> filters = new List<IFilter>();
-            filters.Add(new AxisFilter());
-            filters.Add(new SubFilter());
+            List<IFilter> filters = new List<IFilter>
+            {
+                new AxisFilter(),
+                new SubFilter()
+            };
 
             Filters = filters;
         }
@@ -110,7 +141,7 @@ namespace Easy
         /// <summary>
         /// PixelOrder format.
         /// </summary>
-        public PixelOrder PixelOrder { get; private set; }
+        public PixelFormat PixelOrder { get; private set; }
 
         /// <summary>
         /// Pixel image data.
@@ -120,7 +151,7 @@ namespace Easy
         /// <summary>
         /// Get bytes per pixel in this image.
         /// </summary>
-        public int PixelBytes
+        public float PixelBytes
         {
             get
             {
@@ -135,12 +166,12 @@ namespace Easy
         /// <param name="height">Height of image.</param>
         /// <param name="pixelOrder">PixelOrder of image.</param>
         /// <param name="imageData">Pixel image data.</param>
-        public EasyBitmap(int width, int height, PixelOrder pixelOrder, Span<byte> imageData)
+        public EasyBitmap(int width, int height, PixelFormat pixelOrder, Span<byte> imageData)
         {
             Width = width;
             Height = height;
             PixelOrder = pixelOrder;
-            ImageData = new byte[width * height * PixelBytes];
+            ImageData = new byte[(int)(width * height * PixelBytes)];
             imageData.CopyTo(ImageData);
 
             if (ImageData == null || ImageData.Length == 0)
@@ -168,7 +199,7 @@ namespace Easy
         {
             int width;
             int height;
-            PixelOrder pixelOrder;
+            PixelFormat pixelOrder;
             uint compression;
             uint filter;
             ulong imageSize;
@@ -186,7 +217,7 @@ namespace Easy
 
                 width = (int)reader.ReadUInt32();
                 height = (int)reader.ReadUInt32();
-                pixelOrder = (PixelOrder)reader.ReadByte();
+                pixelOrder = (PixelFormat)reader.ReadByte();
                 compression = reader.ReadUInt32();
                 filter = reader.ReadUInt32();
                 imageSize = reader.ReadUInt64();
@@ -234,18 +265,18 @@ namespace Easy
         /// </summary>
         /// <param name="pixelOrder">PixelOrder format.</param>
         /// <returns>Number of bytes used per pixel in the PixelOrder format.</returns>
-        public static int CalculatePixelBytes(PixelOrder pixelOrder)
+        public static float CalculatePixelBytes(PixelFormat pixelOrder)
         {
             switch (pixelOrder)
             {
-                case PixelOrder.ARGB:
-                case PixelOrder.RGBA:
+                case PixelFormat.ARGB:
+                case PixelFormat.RGBA:
                     return 4;
-                case PixelOrder.GrayScale:
+                case PixelFormat.GrayScale:
                     return 1;
-                case PixelOrder.RGB:
+                case PixelFormat.RGB:
                     return 3;
-                case PixelOrder.GrayScaleAlpha:
+                case PixelFormat.GrayScaleAlpha:
                     return 2;
             }
             return 0;
@@ -335,7 +366,7 @@ namespace Easy
         /// <param name="y2">Y2 Euclidean coordinate.</param>
         public void Swap(int x1, int y1, int x2, int y2)
         {
-            int bytes = PixelBytes;
+            int bytes = (int)PixelBytes;
 
             int p1 = (x1 + y1 * Width) * bytes;
             int p2 = (x2 + y2 * Width) * bytes;

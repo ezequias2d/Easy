@@ -33,19 +33,19 @@ namespace Easy.Remap
             }
         }
 
-        public static IRemapModule GetRemapModule(PixelOrder pixelOrder)
+        public static IRemapModule GetRemapModule(PixelFormat pixelOrder)
         {
             switch (pixelOrder)
             {
-                case PixelOrder.ARGB:
+                case PixelFormat.ARGB:
                     return ARGBRemapModule.Instance;
-                case PixelOrder.GrayScale:
+                case PixelFormat.GrayScale:
                     return GrayScaleRemapModule.Instance;
-                case PixelOrder.GrayScaleAlpha:
+                case PixelFormat.GrayScaleAlpha:
                     return GrayScaleARemapModule.Instance;
-                case PixelOrder.RGB:
+                case PixelFormat.RGB:
                     return RGBRemapModule.Instance;
-                case PixelOrder.RGBA:
+                case PixelFormat.RGBA:
                     return RGBARemapModule.Instance;
                 default:
                     throw new ArgumentException("EasyBitmap pixel order is not supported.");

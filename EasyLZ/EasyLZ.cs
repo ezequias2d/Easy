@@ -194,7 +194,7 @@ namespace Easy
             byte codeCount = 0;
 
             bool previewFlag = false;
-            SearchResult previewResult = default(SearchResult);
+            SearchResult previewResult = default;
 
             //header
             dst[dataPosition++] = lengthBits;

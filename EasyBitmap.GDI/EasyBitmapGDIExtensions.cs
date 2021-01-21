@@ -8,26 +8,25 @@ namespace Easy.GDI
 {
     public static class EasyBitmapGDIExtensions
     {
-        private static unsafe Bitmap BitmapFromValues(int width, int height, byte[] values, PixelOrder pixelOrder)
+        private static unsafe Bitmap BitmapFromValues(int width, int height, byte[] values, PixelFormat pixelOrder)
         {
             Bitmap bitmap;
-            PixelFormat pixelFormat;
+            System.Drawing.Imaging.PixelFormat pixelFormat;
             int pixelSizeDst = 0;
-            int pixelSizeSrc = EasyBitmap.CalculatePixelBytes(pixelOrder);
             switch (pixelOrder)
             {
-                case PixelOrder.ARGB:
-                case PixelOrder.RGBA:
-                case PixelOrder.GrayScaleAlpha:
-                    pixelFormat = PixelFormat.Format32bppArgb;
+                case PixelFormat.ARGB:
+                case PixelFormat.RGBA:
+                case PixelFormat.GrayScaleAlpha:
+                    pixelFormat = System.Drawing.Imaging.PixelFormat.Format32bppArgb;
                     pixelSizeDst = 4;
                     break;
-                case PixelOrder.GrayScale:
-                    pixelFormat = PixelFormat.Format8bppIndexed;
+                case PixelFormat.GrayScale:
+                    pixelFormat = System.Drawing.Imaging.PixelFormat.Format8bppIndexed;
                     pixelSizeDst = 1;
                     break;
-                case PixelOrder.RGB:
-                    pixelFormat = PixelFormat.Format24bppRgb;
+                case PixelFormat.RGB:
+                    pixelFormat = System.Drawing.Imaging.PixelFormat.Format24bppRgb;
                     pixelSizeDst = 3;
                     break;
                 default:
@@ -36,7 +35,7 @@ namespace Easy.GDI
 
             bitmap = new Bitmap(width, height, pixelFormat);
 
-            if (pixelOrder == PixelOrder.GrayScale)
+            if (pixelOrder == PixelFormat.GrayScale)
             {
                 ColorPalette pallet = bitmap.Palette;
                 for (int i = 0; i < 256; i++)
@@ -57,6 +56,7 @@ namespace Easy.GDI
             int pixels = width * height;
 
             values = Remap.Remap.RemapColors(values, width, height, Remap.Remap.GetRemapModule(pixelOrder), ARGBRemapModule.Instance);
+            int pixelSizeSrc = (int)EasyBitmap.CalculatePixelBytes(PixelFormat.ARGB);
 
             fixed (byte* dst = rgbValues, src = values)
             {
@@ -68,22 +68,22 @@ namespace Easy.GDI
                     pS = i * pixelSizeSrc;
                     switch (pixelOrder)
                     {
-                        case PixelOrder.ARGB:
-                        case PixelOrder.RGBA:
+                        case PixelFormat.ARGB:
+                        case PixelFormat.RGBA:
                             dst[pD + 3] = src[pS];
                             dst[pD + 2] = src[pS + 1];
                             dst[pD + 1] = src[pS + 2];
                             dst[pD] = src[pS + 3];
                             break;
-                        case PixelOrder.GrayScale:
+                        case PixelFormat.GrayScale:
                             dst[pD] = src[pS + 1];
                             break;
-                        case PixelOrder.RGB:
+                        case PixelFormat.RGB:
                             dst[pD + 2] = src[pS + 1];
                             dst[pD + 1] = src[pS + 2];
                             dst[pD] = src[pS + 3];
                             break;
-                        case PixelOrder.GrayScaleAlpha:
+                        case PixelFormat.GrayScaleAlpha:
                             dst[pD + 3] = src[pS];
                             dst[pD + 2] = src[pS + 1];
                             dst[pD + 1] = src[pS + 1];
@@ -106,25 +106,25 @@ namespace Easy.GDI
             array[index + 3] = b;
         }
 
-        private static unsafe byte[] ImageDataFromBitmap(Bitmap bitmap, PixelOrder pixelOrder)
+        private static unsafe byte[] ImageDataFromBitmap(Bitmap bitmap, PixelFormat pixelFormat)
         {
-            int pixelSizeDst = EasyBitmap.CalculatePixelBytes(PixelOrder.ARGB);
+            int pixelSizeDst = (int)EasyBitmap.CalculatePixelBytes(PixelFormat.ARGB);
             int pixelSizeSrc = 0;
             switch (bitmap.PixelFormat)
             {
-                case PixelFormat.Format32bppArgb:
+                case System.Drawing.Imaging.PixelFormat.Format32bppArgb:
                     pixelSizeSrc = 4;
                     break;
-                case PixelFormat.Format16bppGrayScale:
+                case System.Drawing.Imaging.PixelFormat.Format16bppGrayScale:
                     pixelSizeSrc = 2;
                     break;
-                case PixelFormat.Format24bppRgb:
+                case System.Drawing.Imaging.PixelFormat.Format24bppRgb:
                     pixelSizeSrc = 3;
                     break;
-                case PixelFormat.Format32bppRgb:
+                case System.Drawing.Imaging.PixelFormat.Format32bppRgb:
                     pixelSizeSrc = 4;
                     break;
-                case PixelFormat.Format8bppIndexed:
+                case System.Drawing.Imaging.PixelFormat.Format8bppIndexed:
                     pixelSizeSrc = 1;
                     break;
                 default:
@@ -148,7 +148,7 @@ namespace Easy.GDI
                 int p;
                 byte aux;
                 Color[] pallet = null;
-                if (bitmap.PixelFormat == PixelFormat.Format8bppIndexed)
+                if (bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
                 {
                     pallet = bitmap.Palette.Entries;
                 }
@@ -158,18 +158,18 @@ namespace Easy.GDI
                     p = i * pixelSizeSrc;
                     switch (bitmap.PixelFormat)
                     {
-                        case PixelFormat.Format32bppArgb:
+                        case System.Drawing.Imaging.PixelFormat.Format32bppArgb:
                             SetColors(src[p + 3], src[p + 2], src[p + 1], src[p + 0], dst, i * pixelSizeDst);
                             break;
-                        case PixelFormat.Format16bppGrayScale:
+                        case System.Drawing.Imaging.PixelFormat.Format16bppGrayScale:
                             aux = (byte)(((src[p] * 256) + src[p + 1]) / 257);
                             SetColors(255, aux, aux, aux, dst, i * pixelSizeDst);
                             break;
-                        case PixelFormat.Format24bppRgb:
-                        case PixelFormat.Format32bppRgb:
+                        case System.Drawing.Imaging.PixelFormat.Format24bppRgb:
+                        case System.Drawing.Imaging.PixelFormat.Format32bppRgb:
                             SetColors(255, src[p + 2], src[p + 1], src[p + 0], dst, i * pixelSizeDst);
                             break;
-                        case PixelFormat.Format8bppIndexed:
+                        case System.Drawing.Imaging.PixelFormat.Format8bppIndexed:
                             aux = src[p];
                             SetColors(255, pallet[aux].R, pallet[aux].G, pallet[aux].B, dst, i * pixelSizeDst);
                             break;
@@ -178,10 +178,10 @@ namespace Easy.GDI
                 }
             }
             bitmap.UnlockBits(bmpData);
-            imageData = Remap.Remap.RemapColors(imageData, bitmap.Width, bitmap.Height, ARGBRemapModule.Instance, Remap.Remap.GetRemapModule(pixelOrder));
+            imageData = Remap.Remap.RemapColors(imageData, bitmap.Width, bitmap.Height, ARGBRemapModule.Instance, Remap.Remap.GetRemapModule(pixelFormat));
             return imageData;
         }
-        public static EasyBitmap ToEasyBitmap(this Bitmap bitmap, PixelOrder pixelOrder)
+        public static EasyBitmap ToEasyBitmap(this Bitmap bitmap, PixelFormat pixelOrder)
         {
             int w = bitmap.Width;
             int h = bitmap.Height;

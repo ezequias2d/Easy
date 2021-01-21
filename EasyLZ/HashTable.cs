@@ -8,7 +8,7 @@ namespace Easy
 {
     public unsafe class HashTable
     {
-        private Stack<Node> cache;
+        private readonly Stack<Node> cache;
         private class Node
         {
             public int position;
@@ -24,11 +24,11 @@ namespace Easy
             }
         }
 
-        private Node[] table;
+        private readonly Node[] table;
+        private readonly int size;
+        private readonly int maxGenerationOffset;
         private int option;
-        private int size;
         private int generation;
-        private int maxGenerationOffset;
         private Node cacheNode;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
