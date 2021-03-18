@@ -29,7 +29,7 @@ namespace Easy
         /// <param name="maxOffset">Max match distance.</param>
         /// <returns>Max match of current position of data limited by maxLength and maxOffset.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static SearchResult SearchInternal(Span<byte> src, HashTable hashTable, in int position, in int maxLength, in int maxOffset)
+        private static SearchResult SearchInternal(ReadOnlySpan<byte> src, HashTable hashTable, in int position, in int maxLength, in int maxOffset)
         {
             hashTable.Update();
             SearchResult result = new SearchResult { length = 1, offset = 0 };
@@ -70,7 +70,7 @@ namespace Easy
         /// <param name="position">Position of byte to add.</param>
         /// <param name="resultLength">Bytes to add.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void AddHashTable(in Span<byte> src, in HashTable hashTable, in int position, in int resultLength)
+        private static void AddHashTable(in ReadOnlySpan<byte> src, in HashTable hashTable, in int position, in int resultLength)
         {
             int idx = position;
             int end = position + resultLength;
@@ -92,7 +92,7 @@ namespace Easy
         /// <param name="previewResult">Match size previously found.</param>
         /// <returns>Max match of current position of data limited by maxLength and maxOffset.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static SearchResult Search(Span<byte> src, HashTable hashTable, in int position, in int maxLength, in int maxOffset, ref bool previewFlag, ref SearchResult previewResult)
+        private static SearchResult Search(ReadOnlySpan<byte> src, HashTable hashTable, in int position, in int maxLength, in int maxOffset, ref bool previewFlag, ref SearchResult previewResult)
         {
             SearchResult result;
 
@@ -150,7 +150,7 @@ namespace Easy
         /// <param name="dst">Destination data.</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int Encode(Span<byte> src, Span<byte> dst, byte lengthBits = 2)
+        public static int Encode(ReadOnlySpan<byte> src, Span<byte> dst, byte lengthBits = 2)
         {
             int dstPosition = 0;
             uint uncompressedSize = (uint)src.Length;
@@ -178,7 +178,7 @@ namespace Easy
         /// <param name="lengthBits">Bits used for word copy size (maximum is 7), (8 - lenghtBits) is the bits used to locate the copy.</param>
         /// <returns>Compressed data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int RawEncode(Span<byte> src, Span<byte> dst, byte lengthBits = 2)
+        public static int RawEncode(ReadOnlySpan<byte> src, Span<byte> dst, byte lengthBits = 2)
         {
             int position = 0;
             int length = src.Length;
@@ -257,7 +257,7 @@ namespace Easy
         /// <param name="src">Source data.</param>
         /// <returns>Decoded data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static byte[] Decode(Span<byte> src)
+        public static byte[] Decode(ReadOnlySpan<byte> src)
         {
             int srcCount = 0;
             byte[] EALZ = new byte[4];
@@ -296,7 +296,7 @@ namespace Easy
         /// <param name="dst">Destination data.</param>
         /// <returns>Uncompressed size.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe int RawDecode(Span<byte> src, Span<byte> dst)
+        public static unsafe int RawDecode(ReadOnlySpan<byte> src, Span<byte> dst)
         {
             fixed (byte* pSrc = src, pDst = dst)
             {

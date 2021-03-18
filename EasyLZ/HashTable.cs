@@ -27,7 +27,6 @@ namespace Easy
         private readonly Node[] table;
         private readonly int size;
         private readonly int maxGenerationOffset;
-        private int option;
         private int generation;
         private Node cacheNode;
 
@@ -38,7 +37,6 @@ namespace Easy
             cache = new Stack<Node>();
             this.size = size;
             this.maxGenerationOffset = maxGenerationOffset;
-            option = 0;
             generation = 0;
             cacheNode = null;
         }
@@ -65,16 +63,14 @@ namespace Easy
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(in Span<byte> src, in int position)
+        public void Add(in ReadOnlySpan<byte> src, in int position)
         {
             int hash = Hash(src, position);
-            //table[hash] = GetOrCreateNode(position, generation, table[hash]);
-            //table[hash] = new Node(position, generation, table[hash]);
             table[hash] = new Node(position, generation, null);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int Get(in Span<byte> src, in int position)
+        public int Get(in ReadOnlySpan<byte> src, in int position)
         {
             Node node;
             if (cacheNode == null)
@@ -88,16 +84,7 @@ namespace Easy
             }
 
             while(node != null && node.next != null && (generation - node.next.generation) > maxGenerationOffset)
-            {
-                //ReturnNode(node.next);
                 node.next = null;
-            }
-
-            //for(int i = 0; i < option && node != null; i++)
-            //{
-            //    node = node.next;
-            //}
-            //option++;
 
             if (node != null)
             {
@@ -111,20 +98,17 @@ namespace Easy
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Update()
         {
-            option = 0;
             generation++;
             cacheNode = null;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int Hash(in Span<byte> src, in int position)
+        private int Hash(in ReadOnlySpan<byte> src, in int position)
         {
-            //return (ushort)(((src[position] & 0xFF) * 33 + (src[position + 1] & 0xFF)) % size);
             fixed (byte* pSrc = src)
             {
                 return (*(ushort*)(pSrc + position));
             }
-            //return Math.Abs(((src[position] * 33 + src[position + 1])) % size);
         }
     }
 }
